@@ -1,0 +1,20 @@
+import java.util.HashMap;
+
+public class Executor {
+
+    HashMap<String, Integer> memory = new HashMap<>();
+
+    public void assign(String variable, int value){
+
+        memory.put(variable,value);
+        System.out.println(variable + " = " + value);
+
+    }
+
+    public static void main(String[] args) {
+        Executor executor = new Executor();
+        executor.assign("y", 20);
+
+    }
+
+}

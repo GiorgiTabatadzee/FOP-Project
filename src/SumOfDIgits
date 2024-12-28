@@ -1,0 +1,15 @@
+fun sumOfDigits(number: Int): Int {
+    var temp = number
+    var sum = 0
+    
+    while (temp != 0) {
+        sum += temp % 10   // extract the last digit
+        temp /= 10         // remove the last digit
+    }
+    return sum
+}
+
+fun main() {
+    val number = 12345
+    println("Sum of digits of $number is ${sumOfDigits(number)}")  // Output: 15
+}

@@ -69,7 +69,7 @@ public class Executor {
         int operatorIndex = -1;
         char operator = ' ';
 
-       // checking the existence of operator in right operand
+        // checking the existence of operator in right operand
         for (int i = 0; i < expression.length(); i++) {
             char c = expression.charAt(i);
             if (c == '/' || c == '*' || c == '%' || c == '-' || c == '+') {
@@ -81,26 +81,34 @@ public class Executor {
 
         }
         // if we didn't find any operator
-        if(operatorIndex == -1){
+        if (operatorIndex == -1) {
             throw new IllegalArgumentException("The operator was not found");
 
         }
         //extracting left and right operands of expression
-        String leftOperand = expression.substring(0,operatorIndex);
+        String leftOperand = expression.substring(0, operatorIndex);
         String rightOperand = expression.substring(operatorIndex + 1);
 
         // parsing both
         int num1 = Integer.parseInt(leftOperand);
-        int num2 =Integer.parseInt(rightOperand);
+        int num2 = Integer.parseInt(rightOperand);
 
-       //then we move on to the calculation of this expression based on the operator
+       /*
+        here I made the method calculate which on operations *%+-/ makes appropriate operations on operands
+        and after this I handle with try-catch exception which will ensure the code will work without issues
+        and propagate to the next step.
+        */
 
-       
-        return calculate(num1,num2,operator);
+        try {
+           return calculate(num1, num2, operator);
+        } catch (ArithmeticException e) {
+            System.out.println("Error: " + e.getMessage());
+            throw e;
+        }
     }
 
     public int calculate(int num1, int num2, char operator) {
-        switch (operator){
+        switch (operator) {
             case '+':
                 return num1 + num2;
             case '-':
@@ -108,15 +116,11 @@ public class Executor {
             case '%':
                 return num1 % num2;
             case '/':
-                if(num2 == 0){
-                    throw new ArithmeticException("Division by zero detected");
-                }
                 return num1 / num2;
             case '*':
                 return num1 * num2;
             default:
-                throw new IllegalArgumentException("The provided operator " + operator + " is invalid" );
-
+                throw new IllegalArgumentException("Invalid operator inputted " + operator);
 
         }
 
@@ -150,4 +154,62 @@ public class Executor {
         }
 
     }
+    public void handlingIfStatement(String input){
+      if(input.startsWith("if")){
+          //basically we check if "if" statement has parenthesis
+          int openParenIndex = input.indexOf('(');
+          int closeParenIndex = input.indexOf(')');
+
+          if(openParenIndex == -1 || closeParenIndex == -1){
+              throw new IllegalArgumentException("The parenthesis are missing");
+          }
+          // then we extract the statement
+          String condition = input.substring(openParenIndex + 1, closeParenIndex).trim();
+
+          //repeating same for curly braces
+          int openBraceIndex = input.indexOf('{');
+          int closeBraceIndex = input.indexOf('}');
+
+          if(openBraceIndex == -1 || closeBraceIndex == -1){
+              throw new IllegalArgumentException("curly braces missing");
+
+          }
+          String block = input.substring(openBraceIndex + 1, closeBraceIndex).trim();
+
+          //here we evaluate the if-statement
+          boolean conditionResult = evaluateCondition(condition);
+         if(conditionResult){
+             executeBlock(block);
+         }
+         
+
+      }
+
+    }
+
+    private void executeBlock(String block) {
+         //so here we split the string by semicolon and if line is not empty in block it means we have
+        //to evaluate some expression
+        String[] lines = block.split(";");
+        for(String line : lines){
+            line = line.trim();
+            if(!line.isEmpty()){
+                eval(line);
+            }
+        }
+
+    }
+   //here we evaluate the condition for if/while
+    private boolean evaluateCondition(String condition) {
+
+        condition = condition.trim();
+        if(condition.equals("true")){
+            return true;
+
+        }
+        if(condition.equals("false")){
+            return false;
+        }
+    }
+
 }

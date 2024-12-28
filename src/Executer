@@ -1,20 +1,153 @@
 import java.util.HashMap;
+import java.util.Map;
 
 public class Executor {
 
-    HashMap<String, Integer> memory = new HashMap<>();
 
-    public void assign(String variable, int value){
+    private final Map<String, Integer> memory = new HashMap<>();
 
-        memory.put(variable,value);
-        System.out.println(variable + " = " + value);
 
-    }
+    public void eval(String program) {
 
-    public static void main(String[] args) {
-        Executor executor = new Executor();
-        executor.assign("y", 20);
+        program = program.trim();
+        String[] splittedString = program.split(" ");
+
 
     }
 
+    public void handlingAssignment(String[] stringArr) {
+
+        //checking validation of assignment val/var
+        String assignment = stringArr[0];
+        if (assignment.equals("var") || assignment.equals("val")) {
+            String leftOpr = stringArr[1];
+
+            //Edge cases for left Operand
+            if (!leftOpr.matches("[a-zA-Z_][a-zA-Z0-9_]*")) {
+                throw new IllegalArgumentException("The leftOpt cant be number or start with number");
+            }
+
+            //checking if it's the equal operation
+            if (!stringArr[2].equals("=")) {
+                throw new IllegalArgumentException("Invalid syntax");
+
+            }
+            String rightOpt = stringArr[3];
+
+            //checking if right operand contains arithmetic operation
+            if (rightOpt.matches("-?\\d+")) {
+                int rightNum = Integer.parseInt(rightOpt);
+            } else {
+                //here ve call method
+                int result = evaluateExpression(rightOpt);
+            }
+
+            //val is immutable so
+            if (assignment.equals("val") && memory.containsKey(leftOpr)) {
+                throw new IllegalArgumentException("cannot reassign a val variable " + leftOpr);
+
+            }
+            //finally if the right operand is integer
+            try {
+                int value = Integer.parseInt(rightOpt);
+                System.out.println(leftOpr + "=" + value);
+                memory.put(leftOpr, value);
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("Invalid value " + rightOpt + "As it is not an integer");
+            }
+
+
+        }
+
+
+    }
+
+    private int evaluateExpression(String expression) {
+
+        expression = expression.replace(" ", "");
+
+        int operatorIndex = -1;
+        char operator = ' ';
+
+       // checking the existence of operator in right operand
+        for (int i = 0; i < expression.length(); i++) {
+            char c = expression.charAt(i);
+            if (c == '/' || c == '*' || c == '%' || c == '-' || c == '+') {
+                operatorIndex = i;
+                operator = c;
+                break;
+            }
+
+
+        }
+        // if we didn't find any operator
+        if(operatorIndex == -1){
+            throw new IllegalArgumentException("The operator was not found");
+
+        }
+        //extracting left and right operands of expression
+        String leftOperand = expression.substring(0,operatorIndex);
+        String rightOperand = expression.substring(operatorIndex + 1);
+
+        // parsing both
+        int num1 = Integer.parseInt(leftOperand);
+        int num2 =Integer.parseInt(rightOperand);
+
+       //then we move on to the calculation of this expression based on the operator
+
+       
+        return calculate(num1,num2,operator);
+    }
+
+    public int calculate(int num1, int num2, char operator) {
+        switch (operator){
+            case '+':
+                return num1 + num2;
+            case '-':
+                return num1 - num2;
+            case '%':
+                return num1 % num2;
+            case '/':
+                if(num2 == 0){
+                    throw new ArithmeticException("Division by zero detected");
+                }
+                return num1 / num2;
+            case '*':
+                return num1 * num2;
+            default:
+                throw new IllegalArgumentException("The provided operator " + operator + " is invalid" );
+
+
+        }
+
+    }
+
+    public void handlingPrints(String string) {
+        if (string.startsWith("println")) {
+
+            // take "Name" from println("Name") and remove any whiteSpaces
+
+            String content = string.substring(8, string.length() - 1).trim();
+
+            // removing quotes to have in console printed -> Name instead of -> "Name"
+
+            if (content.startsWith("\"") && content.endsWith("\"")) {
+                content = content.substring(1, string.length() - 1);
+            }
+            System.out.println(content);
+
+        } else if (string.startsWith("print")) {
+            //repeating the same as before
+
+            String content = string.substring(6, string.length() - 1).trim();
+
+            if (content.startsWith("\"") && content.endsWith("\"")) {
+                content = content.substring(1, content.length() - 1);
+            }
+
+            System.out.print(content);
+
+        }
+
+    }
 }

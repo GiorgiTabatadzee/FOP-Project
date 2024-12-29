@@ -1,3 +1,4 @@
+import java.nio.file.NoSuchFileException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,9 +10,40 @@ public class Executor {
 
     public void eval(String program) {
 
-        program = program.trim();
-        String[] splittedString = program.split(" ");
+        String[] lines = program.split(System.lineSeparator());
+        for (String line : lines) {
+            line = line.trim();
+            if (!line.isEmpty()) {
+                lineExecutor(line);
+            }
+        }
 
+
+    }
+
+    public void lineExecutor(String line) {
+        if(line.startsWith("fun")){
+            evalMain(line);
+        }
+        if (line.startsWith("if")) {
+            handlingIfWhileStatement(line);
+        } else if (line.startsWith("while")) {
+            handlingIfWhileStatement(line);
+        } else if (line.startsWith("for")) {
+            handlingFor(line);
+        } else if (line.startsWith("print") || line.startsWith("println")) {
+            handlingPrints(line);
+        } else if (line.startsWith("var") || line.startsWith("val")) {
+            String[] splittedString = line.split(" ");
+            handlingAssignment(splittedString);
+        }else if(line.matches("\\w+\\s*[+\\-*/%]=\\s*.+")){
+            handlingAssignments(line);
+        }else if(line.startsWith("return")){
+            handlingReturn(line);
+        }
+        else {
+            throw new IllegalArgumentException("The provided syntax does not exist");
+        }
 
     }
 
@@ -19,9 +51,16 @@ public class Executor {
 
         //checking validation of assignment val/var
         String assignment = stringArr[0];
+        String leftOpr = stringArr[1];
         if (assignment.equals("var") || assignment.equals("val")) {
-            String leftOpr = stringArr[1];
 
+            if (memory.containsKey(leftOpr)) {
+                throw new IllegalArgumentException("The leftOpt is not defined");
+            } else {
+                if (!memory.containsKey(assignment)) {
+                    throw new IllegalArgumentException("Variable " + assignment + " is not declared");
+                }
+            }
             //Edge cases for left Operand
             if (!leftOpr.matches("[a-zA-Z_][a-zA-Z0-9_]*")) {
                 throw new IllegalArgumentException("The leftOpt cant be number or start with number");
@@ -29,6 +68,9 @@ public class Executor {
 
             //checking if it's the equal operation
             if (!stringArr[2].equals("=")) {
+
+
+
                 throw new IllegalArgumentException("Invalid syntax");
 
             }
@@ -69,7 +111,7 @@ public class Executor {
         int operatorIndex = -1;
         char operator = ' ';
 
-       // checking the existence of operator in right operand
+        // checking the existence of operator in right operand
         for (int i = 0; i < expression.length(); i++) {
             char c = expression.charAt(i);
             if (c == '/' || c == '*' || c == '%' || c == '-' || c == '+') {
@@ -81,26 +123,34 @@ public class Executor {
 
         }
         // if we didn't find any operator
-        if(operatorIndex == -1){
+        if (operatorIndex == -1) {
             throw new IllegalArgumentException("The operator was not found");
 
         }
         //extracting left and right operands of expression
-        String leftOperand = expression.substring(0,operatorIndex);
+        String leftOperand = expression.substring(0, operatorIndex);
         String rightOperand = expression.substring(operatorIndex + 1);
 
         // parsing both
         int num1 = Integer.parseInt(leftOperand);
-        int num2 =Integer.parseInt(rightOperand);
+        int num2 = Integer.parseInt(rightOperand);
 
-       //then we move on to the calculation of this expression based on the operator
+       /*
+        here I made the method calculate which on operations *%+-/ makes appropriate operations on operands
+        and after this I handle with try-catch exception which will ensure the code will work without issues
+        and propagate to the next step.
+        */
 
-       
-        return calculate(num1,num2,operator);
+        try {
+            return calculate(num1, num2, operator);
+        } catch (ArithmeticException e) {
+            System.out.println("Error: " + e.getMessage());
+            throw e;
+        }
     }
 
     public int calculate(int num1, int num2, char operator) {
-        switch (operator){
+        switch (operator) {
             case '+':
                 return num1 + num2;
             case '-':
@@ -108,15 +158,11 @@ public class Executor {
             case '%':
                 return num1 % num2;
             case '/':
-                if(num2 == 0){
-                    throw new ArithmeticException("Division by zero detected");
-                }
                 return num1 / num2;
             case '*':
                 return num1 * num2;
             default:
-                throw new IllegalArgumentException("The provided operator " + operator + " is invalid" );
-
+                throw new IllegalArgumentException("Invalid operator inputted " + operator);
 
         }
 
@@ -150,4 +196,303 @@ public class Executor {
         }
 
     }
+
+    public void handlingIfWhileStatement(String input) {
+        if (input.startsWith("if")) {
+            //basically we check if "if" statement has parenthesis
+            int openParenIndex = input.indexOf('(');
+            int closeParenIndex = input.indexOf(')');
+
+            if (openParenIndex == -1 || closeParenIndex == -1) {
+                throw new IllegalArgumentException("The parenthesis are missing");
+            }
+            // then we extract the statement
+            String condition = input.substring(openParenIndex + 1, closeParenIndex).trim();
+
+            //repeating same for curly braces
+            int openBraceIndex = input.indexOf('{');
+            int closeBraceIndex = input.indexOf('}');
+
+            if (openBraceIndex == -1 || closeBraceIndex == -1) {
+                throw new IllegalArgumentException("curly braces missing");
+
+            }
+            String block = input.substring(openBraceIndex + 1, closeBraceIndex).trim();
+
+            //here we evaluate the if-statement
+            if (input.startsWith("if")) {
+                boolean conditionResult = evaluateCondition(condition);
+                if (conditionResult) {
+                    executeBlock(block);
+                }
+            } else if (input.startsWith("while")) {
+                boolean conditionResult = evaluateCondition(condition);
+                while (conditionResult) {
+                    executeBlock(block);
+                    conditionResult = evaluateCondition(condition);
+                }
+            }
+        }
+
+
+    }
+
+    private void executeBlock(String block) {
+        //so here we split the string by semicolon and if line is not empty in block it means we have
+        //to evaluate some expression
+        String[] lines = block.split(";");
+        for (String line : lines) {
+            line = line.trim();
+            if (!line.isEmpty()) {
+                eval(line);
+            }
+        }
+
+    }
+
+    //here we evaluate the condition for if/while
+    private boolean evaluateCondition(String condition) {
+
+        condition = condition.trim();
+        if (condition.equals("true")) {
+            return true;
+
+        }
+        if (condition.equals("false")) {
+            return false;
+        }
+
+        return evaluateRelationalExpression(condition);
+    }
+
+    //here we check if in the condition contains relative operations for if
+    public boolean evaluateRelationalExpression(String condition) {
+        String[] operations = {">", "<", ">=", "<=", "!=", "=="};
+
+        for (String operator : operations) {
+            if (condition.contains(operator)) {
+                return processRelationalExpressions(condition, operator);
+            }
+        }
+        throw new IllegalArgumentException("Inappropriate operation provided " + condition);
+    }
+
+
+    // we split the expression into 2 parts and check if its valid and then trim
+    public boolean processRelationalExpressions(String condition, String operator) {
+        String[] parts = condition.split(operator);
+
+        if (parts.length != 2) {
+            throw new IllegalArgumentException("Invalid syntax: " + condition);
+        }
+
+        String leftOperand = parts[0].trim();
+        String rightOperand = parts[1].trim();
+
+        // we compare the values based on the operand
+        return compareValues(resolveMethod(leftOperand), resolveMethod(rightOperand), operator);
+
+    }
+
+    //implementation of appropriate operands
+    private boolean compareValues(int leftValue, int rightValue, String operator) {
+        switch (operator) {
+            case ">":
+                return leftValue > rightValue;
+            case "<":
+                return leftValue < rightValue;
+            case ">=":
+                return leftValue >= rightValue;
+            case "<=":
+                return leftValue <= rightValue;
+            case "==":
+                return leftValue == rightValue;
+            case "!=":
+                return leftValue != rightValue;
+            default:
+                throw new IllegalArgumentException("Wrong operator: " + operator);
+        }
+
+    }
+    //here we check if the operands of operations are either number or variable.
+
+    public int resolveMethod(String operand) {
+        if (operand.matches("-?\\d+")) {
+            return Integer.parseInt(operand);
+        } else if (memory.containsKey(operand)) {
+            return memory.get(operand);
+        } else
+            throw new IllegalArgumentException("Invalid syntax: " + operand);
+
+    }
+
+    //for loop handling, we use some methods
+    public void handlingFor(String input) {
+        if (input.startsWith("for")) {
+            String loopVariable = extractLoopVariable(input);
+            String range = extractRange(input);
+            String block = extractBlock(input);
+            executeForLoop(loopVariable, range, block);
+        }
+
+
+    }
+
+    //extracting variable for example for(i in 1..10) we extract i
+    public String extractLoopVariable(String input) {
+        int startIndex = input.indexOf("(") + 1;
+        int lastIndex = input.indexOf("in");
+        return input.substring(startIndex, lastIndex).trim();
+    }
+
+    //here we extracting for example for(i in 1..10) -> 1..10
+    public String extractRange(String input) {
+        int startIndex = input.indexOf("in") + 2;
+        int endIndex = input.indexOf(")");
+        return input.substring(startIndex, endIndex).trim();
+
+    }
+
+    //we extract what is in the for loop block
+    public String extractBlock(String input) {
+        int startIndex = input.indexOf("{") + 1;
+        int endIndex = input.indexOf("}");
+        return input.substring(startIndex, endIndex).trim();
+
+
+    }
+
+    //we process the range 1..10 in array as {1,10}
+    public int[] processRange(String input) {
+        String[] bounds = input.split("\\.\\.");
+        if (bounds.length != 2) {
+            throw new IllegalArgumentException("Invalid range of for-loop");
+        }
+        int start = Integer.parseInt(bounds[0]);
+        int end = Integer.parseInt(bounds[1]);
+        return new int[]{start, end};
+    }
+
+    //and executing the for loop
+    public void executeForLoop(String loopVariable, String range, String block) {
+        int[] bounds = processRange(range);
+        int start = bounds[0];
+        int end = bounds[1];
+        for (int i = start; i <= end; i++) {
+            memory.put(loopVariable, i);
+            executeBlock(block);
+        }
+    }
+
+    Map<String, Function> functionMap = new HashMap<>();
+
+
+    public void parseFunctionDefinitions(String functionDefinition) {
+        if (functionDefinition.startsWith("fun")) {
+            // Extract function name, parameters, and body
+            String name = functionDefinition.substring(4, functionDefinition.indexOf("(")).trim();
+            String body = functionDefinition.substring(functionDefinition.indexOf("{") + 1, functionDefinition.indexOf("}")).trim();
+
+            functionMap.put(name, new Function(name, new String[0], body));  // no parameters for 'main'
+        }
+
+
+    }
+
+    public void executeFunction(String functionName, String[] arguments) {
+        Function function = functionMap.get(functionName);
+
+        if (function != null) {
+            eval(function.body);  // Execute the function body
+        } else {
+            throw new IllegalArgumentException("Function not defined: " + functionName);
+        }
+        
+    }
+
+    public void evalMain(String input) {
+        if (input.startsWith("fun")) {
+            parseFunctionDefinitions(input);
+        } if (input.contains("(") && input.contains(")") && !(input.startsWith("fun"))) {
+            String functionName = input.substring(0, input.indexOf("(")).trim();
+            String args = input.substring(input.indexOf("(") + 1, input.indexOf(")")).trim();
+
+            String[] arguments = args.isEmpty() ? new String[0] : args.split("\\s*,\\s*");
+
+            executeFunction(functionName, arguments);
+            return;
+        }
+
+            eval(input);
+
+
+    }
+
+    public void handlingAssignments(String input){
+   String[] parts = input.split("(?<=[+\\-*/%]=)|(?=[+\\-*/%]=)", 2);
+
+   if(parts.length!=2){
+       throw new IllegalArgumentException("Invalid syntax for compound assignments: " + input);
+   }
+     String leftOpt = parts[0].trim();
+     String operator = parts[1].substring(0,2);
+     String rightOpt = parts[1].substring(2);
+
+     if(!memory.containsKey(leftOpt)){
+         throw new IllegalArgumentException("Variable: " + leftOpt + "is not declared");
+     }
+
+     int leftValue = memory.get(leftOpt);
+     int rightValue = resolveMethod(rightOpt);
+
+     switch (operator){
+         case "+=":
+             memory.put(leftOpt, leftValue + rightValue);
+             break;
+         case "-=":
+             memory.put(leftOpt, leftValue - rightValue);
+             break;
+         case "/=":
+             if(rightValue == 0){
+                 throw new ArithmeticException("Division by zero detected");
+             }
+             memory.put(leftOpt, leftValue / rightValue);
+             break;
+         case "%=":
+             if(rightValue == 0){
+                 throw new ArithmeticException("Division by zero detected");
+             }
+             memory.put(leftOpt, leftValue % rightValue);
+             break;
+         case "*=":
+             memory.put(leftOpt, leftValue * rightValue);
+             break;
+         default:
+             throw new IllegalArgumentException("The current operand provided does not exist");
+     }
+
+    }
+   public void handlingReturn(String line){
+
+        String expression =line.substring(6).trim();
+
+        if(expression.contains("+") || expression.contains("-") || expression.contains("*") || expression.contains("/")){
+            int result = evaluateExpression(expression);
+            System.out.println(result);
+
+        }else{
+            String varName = expression.trim();
+            if(memory.containsKey(varName)){
+                int value =memory.get(varName);
+                System.out.println(value);
+            }else{
+                throw new IllegalArgumentException("Variable not found: " + varName);
+            }
+
+        }
+
+
+   }
+
+
 }

@@ -1,15 +1,23 @@
-fun sumOfDigits(number: Int): Int {
-    var temp = number
-    var sum = 0
-    
-    while (temp != 0) {
-        sum += temp % 10   // extract the last digit
-        temp /= 10         // remove the last digit
-    }
-    return sum
-}
+public class SumOfDIgit {
+    public static void main(String[] args) {
 
-fun main() {
-    val number = 12345
-    println("Sum of digits of $number is ${sumOfDigits(number)}")  // Output: 15
+        String code = """
+         var number = 293847
+         var sumOfDigits = 0
+        
+         while (number > 0) {
+         var digit = number % 10
+         
+         sumOfDigits += digit
+         number = number / 10
+         }
+        
+        println(sumOfDigits)
+                
+                
+        """;
+
+        KotlinToJavaInterpreter interpreter = new KotlinToJavaInterpreter();
+        interpreter.interpret(code);
+    }
 }

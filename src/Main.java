@@ -252,3 +252,137 @@ public class KotlinToJavaInterpreter {
             System.out.println(value); // Print the value
         }
     }
+     private String extractCondition(String line) {
+        int start = line.indexOf("(") + 1;
+        int end = line.indexOf(")");
+        return line.substring(start, end).trim();
+    }
+    private void handleIncrement(String line) {
+        String variableName = line.replace("++", "").trim();
+        if (variables.containsKey(variableName)) {
+            variables.put(variableName, variables.get(variableName) + 1);
+        }
+    }
+
+    private void handleDecrement(String line) {
+        String variableName = line.replace("--", "").trim();
+        if (variables.containsKey(variableName)) {
+            variables.put(variableName, variables.get(variableName) - 1);
+        }
+    }
+
+    private void handleBreak() {
+        breakFlag = true; // setting the break flag to true
+    }
+
+    private boolean evaluateBooleanExpression(String expression) {
+
+        if (expression.contains("||")) {
+            String[] parts = expression.split("\\|\\|");
+            for (String part : parts) {
+                if (evaluateBooleanExpression(part.trim())) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        if (expression.contains("&&")) {
+            String[] parts = expression.split("&&");
+            for (String part : parts) {
+                if (!evaluateBooleanExpression(part.trim())) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        if (expression.startsWith("!")) {
+            return !evaluateBooleanExpression(expression.substring(1).trim());
+        }
+
+        if (expression.contains("==")) {
+            String[] parts = expression.split("==");
+            return evaluateExpression(parts[0].trim()) == evaluateExpression(parts[1].trim());
+        }
+
+        if (expression.contains("!=")) {
+            String[] parts = expression.split("!=");
+            return evaluateExpression(parts[0].trim()) != evaluateExpression(parts[1].trim());
+        }
+
+        if (expression.contains(">=")) {
+            String[] parts = expression.split(">=");
+            return evaluateExpression(parts[0].trim()) >= evaluateExpression(parts[1].trim());
+        }
+
+        if (expression.contains("<=")) {
+            String[] parts = expression.split("<=");
+            return evaluateExpression(parts[0].trim()) <= evaluateExpression(parts[1].trim());
+        }
+
+        if (expression.contains(">")) {
+            String[] parts = expression.split(">");
+            return evaluateExpression(parts[0].trim()) > evaluateExpression(parts[1].trim());
+        }
+
+        if (expression.contains("<")) {
+            String[] parts = expression.split("<");
+            return evaluateExpression(parts[0].trim()) < evaluateExpression(parts[1].trim());
+        }
+
+        return evaluateExpression(expression) != 0;
+    }
+
+    private int evaluateExpression(String expression) {
+        expression = substituteVariables(expression); // replacing variables with values
+
+        Stack<Integer> values = new Stack<>();
+        Stack<Character> operators = new Stack<>();
+
+        for (int i = 0; i < expression.length(); i++) {
+            char c = expression.charAt(i);
+
+            if (Character.isWhitespace(c)) {
+                continue;
+            }
+
+            if (Character.isDigit(c)) {
+                int num = 0;
+                while (i < expression.length() && Character.isDigit(expression.charAt(i))) {
+                    num = num * 10 + (expression.charAt(i) - '0');
+                    i++;
+                }
+                i--;
+                values.push(num);
+            } else if (c == '(') {
+                operators.push(c);
+            } else if (c == ')') {
+                while (!operators.isEmpty() && operators.peek() != '(') {
+                    values.push(applyOperator(operators.pop(), values.pop(), values.pop()));
+                }
+                operators.pop(); // Remove '('
+            } else if (isOperator(c)) {
+                while (!operators.isEmpty() && precedence(operators.peek()) >= precedence(c)) {
+                    values.push(applyOperator(operators.pop(), values.pop(), values.pop()));
+                }
+                operators.push(c);
+            }
+        }
+
+        while (!operators.isEmpty()) {
+            values.push(applyOperator(operators.pop(), values.pop(), values.pop()));
+        }
+
+        return values.isEmpty() ? 0 : values.pop();
+    }
+    private String substituteVariables(String expression) {
+
+        for (Map.Entry<String, Integer> entry : variables.entrySet()) {
+            expression = expression.replace(entry.getKey(), String.valueOf(entry.getValue()));
+        }
+        for (Map.Entry<String, Boolean> entry : booleanVariables.entrySet()) {
+            expression = expression.replace(entry.getKey(), entry.getValue() ? "1" : "0");
+        }
+        return expression;
+    }

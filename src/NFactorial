@@ -1,0 +1,22 @@
+public class NFactorial {
+    public static void main(String[] args) {
+
+        String code = """
+         var N = 5
+                 var factorial = 1
+                  var i = 1
+                
+                 while (i <= N) {
+                 factorial = factorial * i
+                  i = i + 1
+                  }
+                  println(factorial) 
+                
+                
+                 
+        """;
+
+        KotlinToJavaInterpreter interpreter = new KotlinToJavaInterpreter();
+        interpreter.interpret(code);
+    }
+}

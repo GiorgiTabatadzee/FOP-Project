@@ -1,10 +1,19 @@
-n = input("Enter the number to generate its multiplication table: ") // Get the number for the table
-i = 1  // Start the multiplier at 1
+public class MultiplicationTable {
+    public static void main(String[] args) {
 
-// Loop through numbers 1 to 10 to generate the multiplication table
-while (i <= 10) {
-    print(n * i)
-    i = i + 1
+        String code = """
+         var number = 5
+         var i = 1
+         while (i <= 10) {
+         var result = number * i
+         println(result)
+         i++
+                            }
+                
+                 
+        """;
+
+        KotlinToJavaInterpreter interpreter = new KotlinToJavaInterpreter();
+        interpreter.interpret(code);
+    }
 }
-
-// The multiplication table is complete at this point

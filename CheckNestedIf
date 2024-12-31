@@ -1,0 +1,22 @@
+public class CheckNestedIf {
+    public static void main(String[] args) {
+
+        String code = """
+         var x=10
+         var y=15
+         if(x>5){
+          if(y<20){
+           println("supports double nested")
+            if(5<10){
+             println("supports triple nested ...")
+            }
+          }
+         }
+                
+                
+        """;
+
+        KotlinToJavaInterpreter interpreter = new KotlinToJavaInterpreter();
+        interpreter.interpret(code);
+    }
+}

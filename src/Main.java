@@ -386,3 +386,166 @@ public class KotlinToJavaInterpreter {
         }
         return expression;
     }
+    private int handleNestedIfInWhile(String[] lines, int lineIndex) {
+
+        String condition = extractCondition(lines[lineIndex].trim());
+        int startOfLoop = lineIndex + 1;
+        int endOfLoop = findEndOfBlock(lines, lineIndex);
+
+        while (evaluateBooleanExpression(condition)) {
+            int currentLineIndex = startOfLoop;
+            while (currentLineIndex < endOfLoop) {
+                String currentLine = lines[currentLineIndex].trim();
+
+                if (currentLine.startsWith("if")) {
+                    currentLineIndex = handleNestedIfInIf(lines, currentLineIndex);
+                } else {
+                    interpretLine(currentLine);
+                    currentLineIndex++;
+                }
+
+
+                if (breakFlag) {
+                    breakFlag = false;
+                    return endOfLoop + 1;
+                }
+            }
+
+
+            condition = extractCondition(lines[lineIndex].trim());
+        }
+
+
+        return endOfLoop + 1;
+    }
+
+
+
+
+    private void checkSyntax(String[] lines) {
+        int openBraces = 0;
+        int openParentheses = 0;
+        int openSquareBrackets = 0;
+
+        for (String line : lines) {
+            line = line.trim();
+
+            for (char c : line.toCharArray()) {
+                if (c == '{' || c == '}') {
+                    openBraces++;
+                } else if (c == '(' || c == ')') {
+                    openParentheses++;
+                } else if (c == '[' || c == ']') {
+                    openSquareBrackets++;
+                }
+            }
+        }
+
+
+        if (openBraces % 2 != 0) {
+            throw new RuntimeException("Syntax Error: Unmatched curly braces detected");
+        }
+        if (openParentheses % 2 != 0) {
+            throw new RuntimeException("Syntax Error: Unmatched parentheses detected");
+        }
+        if (openSquareBrackets % 2 != 0) {
+            throw new RuntimeException("Syntax Error: Unmatched square brackets detected");
+        }
+    }
+
+    private int evaluate(String expression) {
+
+        expression = substituteVariables(expression);
+
+        Stack<Integer> values = new Stack<>();
+        Stack<Character> operators = new Stack<>();
+
+        for (int i = 0; i < expression.length(); i++) {
+            char c = expression.charAt(i);
+
+            if (c == ' ') {
+                continue;
+            }
+
+            if (Character.isDigit(c)) {
+                int num = 0;
+                while (i < expression.length() && Character.isDigit(expression.charAt(i))) {
+                    num = num * 10 + (expression.charAt(i) - '0');
+                    i++;
+                }
+                i--;
+                values.push(num);
+            } else if (c == '(') {
+                operators.push(c);
+            } else if (c == ')') {
+                while (!operators.isEmpty() && operators.peek() != '(') {
+                    values.push(applyOperator(operators.pop(), values.pop(), values.pop()));
+                }
+                operators.pop();
+            } else if (isOperator(c)) {
+                while (!operators.isEmpty() && precedence(operators.peek()) >= precedence(c)) {
+                    values.push(applyOperator(operators.pop(), values.pop(), values.pop()));
+                }
+                operators.push(c);
+            }
+        }
+
+        while (!operators.isEmpty()) {
+            values.push(applyOperator(operators.pop(), values.pop(), values.pop()));
+        }
+
+        return values.isEmpty() ? 0 : values.pop();
+    }
+
+
+
+    private boolean isOperator(char c) {
+        return c == '+' || c == '-' || c == '*' || c == '/' || c == '%';
+    }
+
+    private int precedence(char operator) {
+        switch (operator) {
+            case '+':
+            case '-':
+                return 1;
+            case '*':
+            case '/':
+            case '%':
+                return 2;
+            default:
+                return -1;
+        }
+    }
+
+    private int applyOperator(char operator, int b, int a) {
+        switch (operator) {
+            case '+': return a + b;
+            case '-': return a - b;
+            case '*': return a * b;
+            case '/':
+                if (b == 0) throw new ArithmeticException("Division by zero");
+                return a / b;
+            case '%': return a % b;
+        }
+        return 0;
+    }
+
+    public static void main(String[] args) {
+
+        Scanner scanner = new Scanner(System.in);
+        StringBuilder code = new StringBuilder();
+        System.out.println("Enter your code line by line. Press Enter on an empty line to finish:");
+
+
+        while (true) {
+            String line = scanner.nextLine();
+            if (line.isEmpty()) {
+                break;
+            }
+            code.append(line).append("\n");
+        }
+
+        KotlinToJavaInterpreter interpreter = new KotlinToJavaInterpreter();
+        interpreter.interpret(code.toString());
+    }
+}

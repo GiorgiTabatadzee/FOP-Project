@@ -2,14 +2,17 @@
 
 Takes kotlin algorithms and excecutes them in java
 
-## members And Roles:
-Giorgi Tabatadze-parser
-Tsotne Khalebashili-interpreter core
-Davit Avaliani-executer
-Daniel Kucherenko-tester
+## Style: 
+for style we chose to write everything in one big class and added test cases outside of that class. also chose to write code mostly together and then commit after everything was check for functionality.
 
+##  Roles And Contribution :
+Giorgi Tabatadze-As a lead, monitored other team members, helped solving small problems, implemented major methods, such as , interpret, determining start and end of the block ,variable declarations, arithmetic assignments and if statements iside if statements.
+Tsotne Khalebashili-contributed in determining some arithmetic expressions , also some syntax error detection and if statement inside while loop body
+Davit Avaliani-handled extracting conditions, ++, --, break statement, and all boolean expressions
+Daniel Kucherenko-tested written code for functionality
 
-## Contributing:...
-
+## Complications
+On 27 decemer after commiting some changes  we found out that our old repository had some porblems wich we couldn't solve, so we created a new repository in wich 
+ we made commits copied from old repository on 28 december 01:00 am but we informed TA about this complication beforehand.
 
  

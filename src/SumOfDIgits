@@ -1,4 +1,4 @@
-public class SumOfDIgit {
+public class SumOfDigit {
     public static void main(String[] args) {
 
         String code = """
@@ -21,3 +21,4 @@ public class SumOfDIgit {
         interpreter.interpret(code);
     }
 }
+

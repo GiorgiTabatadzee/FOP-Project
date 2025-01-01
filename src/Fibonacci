@@ -18,7 +18,7 @@ public class Fibonacci {
                  
         """;
 
-        KotlinToJavaInterpreter interpreter = new KotlinToJavaInterpreter();
+        KotlinToJavaInterpreterMain interpreter = new KotlinToJavaInterpreterMain();
         interpreter.interpret(code);
     }
 }

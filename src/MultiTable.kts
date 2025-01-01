@@ -13,7 +13,7 @@ public class MultiplicationTable {
                  
         """;
 
-        KotlinToJavaInterpreter interpreter = new KotlinToJavaInterpreter();
+        KotlinToJavaInterpreterMain interpreter = new KotlinToJavaInterpreterMain();
         interpreter.interpret(code);
     }
 }

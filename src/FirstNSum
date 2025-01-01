@@ -12,7 +12,7 @@ public class FirstNSum {
                 println(sum)     
         """;
 
-        KotlinToJavaInterpreter interpreter = new KotlinToJavaInterpreter();
+        KotlinToJavaInterpreterMain interpreter = new KotlinToJavaInterpreterMain();
         interpreter.interpret(code);
     }
 }

@@ -530,7 +530,7 @@ public class KotlinToJavaInterpreterMain {
         return 0;
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) {   //except from string input now user can use scanner to input code
 
         Scanner scanner = new Scanner(System.in);
         StringBuilder code = new StringBuilder();
@@ -545,7 +545,7 @@ public class KotlinToJavaInterpreterMain {
             code.append(line).append("\n");
         }
 
-        KotlinToJavaInterpreter interpreter = new KotlinToJavaInterpreter();
+        KotlinToJavaInterpreterMain interpreter = new KotlinToJavaInterpreterMain();
         interpreter.interpret(code.toString());
     }
 }

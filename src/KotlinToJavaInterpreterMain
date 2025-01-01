@@ -425,7 +425,7 @@ public class KotlinToJavaInterpreterMain {
     private void checkSyntax(String[] lines) {
         int openBraces = 0;
         int openParentheses = 0;
-        int openSquareBrackets = 0;
+        
 
         for (String line : lines) {
             line = line.trim();
@@ -435,9 +435,7 @@ public class KotlinToJavaInterpreterMain {
                     openBraces++;
                 } else if (c == '(' || c == ')') {
                     openParentheses++;
-                } else if (c == '[' || c == ']') {
-                    openSquareBrackets++;
-                }
+                } 
             }
         }
 
@@ -448,9 +446,7 @@ public class KotlinToJavaInterpreterMain {
         if (openParentheses % 2 != 0) {
             throw new RuntimeException("Syntax Error: Unmatched parentheses detected");
         }
-        if (openSquareBrackets % 2 != 0) {
-            throw new RuntimeException("Syntax Error: Unmatched square brackets detected");
-        }
+        
     }
 
     private int evaluate(String expression) {

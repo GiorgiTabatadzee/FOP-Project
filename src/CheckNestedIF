@@ -16,7 +16,7 @@ public class CheckNestedIf {
                 
         """;
 
-        KotlinToJavaInterpreter interpreter = new KotlinToJavaInterpreter();
+       KotlinToJavaInterpreterMain interpreter = new KotlinToJavaInterpreterMain();
         interpreter.interpret(code);
     }
 }

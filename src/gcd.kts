@@ -15,7 +15,7 @@ public class GCD {
                  
         """;
 
-        KotlinToJavaInterpreter interpreter = new KotlinToJavaInterpreter();
+         KotlinToJavaInterpreterMain interpreter = new KotlinToJavaInterpreterMain();
         interpreter.interpret(code);
     }
 }

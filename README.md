@@ -26,6 +26,6 @@ Daniel Kucherenko-tested written code for functionality
 On 27 decemer after commiting some changes  we found out that our old repository had some porblems wich we couldn't solve, so we created a new repository in wich 
  we made commits copied from old repository on 28 december 01:00 am but we informed TA about this complication beforehand.
 ## How To Use
-user can input kotlin syntax code as string or write it in scanner and then present enter on empty line
+user can input kotlin syntax code as string or write it in scanner and then present enter on empty line. code will run inputed algorithm and return answer in terminal.
 
  
